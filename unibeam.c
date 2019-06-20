@@ -1,4 +1,5 @@
 
+
 //////////////////////////////////
 //////////////////////////////////
 // unibeam 
@@ -129,13 +130,15 @@ int markup_output_format = 1;
 // type of doc: 1:tex, 2:html, 3:exam (pts), 4:book, 5:opendoc , 6:exam+ (with points) new and testing,    7: for maths with enumitem,  8: exam list i.e. the first approach, stable (exam in english), 
 /// format 10 is for especially  for calling ! q u, format 10 is new and for fast Punkte (Pkt.) document (without >).
 //// format 11 is for a book with conv the > and - 
-
 // en+ gives doc language 4
 // 1: tex (default)
 // 2: html
 // 3: exam
 // 6: exam+ (new, default, started with !exam+) 
 // 7: math documentation  
+// 10: exams (4 qu per page)
+// 11: bookcode
+// 12: exams (3 qu per page)
 
 int markup_language = 1; // 1:english (standard, international), 2:french, 3:german, 4:en+ english i.e. en+ (for exam, e.g. 3 points)
 // with !set lang=en
@@ -3042,7 +3045,33 @@ void nfileunimark( char *fileout, char *filein )
   	      foundcode = 1;
             } 
 
+            //// !format{XXX}
+            if ( foundcode == 0 )
+            if ( fetchline[0] == '!' )
+            if ( fetchline[1] == 'f' )
+            if ( fetchline[2] == 'o' )
+            if ( fetchline[3] == 'r' )
+            if ( fetchline[4] == 'm' )
+            if ( fetchline[5] == 'a' )
+            if ( fetchline[6] == 't' )
+            if ( fetchline[7] == '{' )
+            {
+ 	      strncpy( fooccharo, strdelimit( fetchline,  '{' ,'}' ,  1 ) , PATH_MAX );
+              markup_output_format = atoi( fooccharo );
+  	      foundcode = 1;
+            } 
 
+            ////////////
+            if ( foundcode == 0 )
+            if ( fetchcmdline[0] == '!' )
+            if ( fetchcmdline[1] == 'p' )
+            if ( strstr( fetchcmdline, "!print format" ) != 0 ) 
+            {
+              fooc = snprintf( fooccharo, 250 , "CODE: The format is %d", markup_output_format );
+ 	      fputs( fooccharo , fp5 );
+ 	      fputs( "\n" , fp5 );
+  	      foundcode = 1;
+            } 
 
             /////////////////////////////////
             if ( foundcode == 0 )  // !im 
@@ -3075,6 +3104,8 @@ void nfileunimark( char *fileout, char *filein )
  	        fputs( strtrim( strcut( fetchline, 3+2, strlen(fetchline))) , fp5 );
                 if ( markup_output_format == 10 ) 
                     fputs( " (3 Pkt.)}" , fp5 );
+                else if ( markup_output_format == 12 ) 
+                    fputs( " (3 Pkt.)}" , fp5 );
                 else 
                     fputs( "}" , fp5 );
  	        fputs( "\n" , fp5 );
@@ -3083,6 +3114,8 @@ void nfileunimark( char *fileout, char *filein )
   	        foundcode = 1;
             }
             /////////////////////////////////
+
+
 
             /////////////////////////////////
             if ( foundcode == 0 ) // !qu with pkt 
@@ -3102,16 +3135,46 @@ void nfileunimark( char *fileout, char *filein )
                 fputs( " (3 Pkt.)}" , fp5 );
  	        fputs( "\n" , fp5 );
  	        fputs( "\\end{itemize}\n" , fp5 );
- 	        fputs( "\\vspace{4cm}\n" , fp5 );  // the trick is to have 4cm to allow answers.
+ 	        //fputs( "\\vspace{4cm}\n" , fp5 );  // the trick is to have 4cm to allow answers.
+                //if ( markup_output_format == 10 ) 
+ 	        fputs( "\\vspace{4cm}\n" , fp5 );  // 4 qu per page, 6cm would be 3 qu per page
   	        foundcode = 1;
             }
             /////////////////////////////////
             /////////////////////////////////
 
+
+
             /////////////////////////////////
             /////////////////////////////////
             //// !format 10 end
             /////////////////////////////////
+            /////////////////////////////////
+            /////////////////////////////////
+
+
+
+            /////////////////////////////////
+            if ( foundcode == 0 ) // !qu with pkt 
+            if ( markup_output_format == 12 ) 
+            if ( fetchline[0] == '!' )
+            if ( fetchline[1] == 'q' ) 
+            if ( fetchline[2] == 'u' )
+            if ( fetchline[3] == ' ' )
+            {
+ 	        fputs( "\\begin{itemize}\n" , fp5 );
+ 	        fputs( "\\item[{\\bfseries {" , fp5 );
+                fooc = snprintf( fooccharo, 50 , "%d", question_qucounter );
+ 	        fputs( fooccharo  , fp5 );
+ 	        fputs( "}}.)]{" , fp5 );
+                question_qucounter++;
+ 	        fputs( strtrim( strcut( fetchline, 3+2, strlen(fetchline))) , fp5 );
+                fputs( " (3 Pkt.)}" , fp5 );
+ 	        fputs( "\n" , fp5 );
+ 	        fputs( "\\end{itemize}\n" , fp5 );
+ 	        fputs( "\\vspace{6cm}\n" , fp5 );  // 3 qu per page
+  	        foundcode = 1;
+            }
             /////////////////////////////////
             /////////////////////////////////
 
@@ -6589,6 +6652,41 @@ void nfileunimark( char *fileout, char *filein )
 
 
 
+
+
+
+
+	   /////////////////
+	   /////////////////
+           if ( foundcode == 0 ) // !linux   for a linux command
+           if ( fetchline[0] == '!' )
+           if ( fetchline[1] == 'l' )
+           if ( fetchline[2] == 'i' )
+           if ( fetchline[3] == 'n' )
+           if ( fetchline[4] == 'u' )
+           if ( fetchline[5] == 'x' )
+           if ( fetchline[6] == ' ' )
+           {
+              if ( MYOS == 1 ) 
+              {
+ 	         printf( "> OS: Linux\n" , fp5 );
+ 	         fputs( " " , fp5 );
+ 	         fputs( strcut( fetchline, 6+2, strlen( fetchline )) , fp5 );
+  	         fputs( " ", fp5 );
+  	         fputs( "\n", fp5 );
+              }
+              else
+              {
+ 	         printf( "> !linux command.\n" , fp5 );
+ 	         printf( "> OS: Non Linux\n" , fp5 );
+              }
+  	      foundcode = 1;
+           }
+
+
+
+
+
 	    /////////////////
 	    /////////////////
 	    /////////////////
@@ -7689,8 +7787,12 @@ int main( int argc, char *argv[])
     if ( strcmp(argv[1], "--version" ) == 0)
     {
 	  printf( "Unibeam version: %s\n", VERSIONNBR );
+	  printf( "OS version:      %d\n", MYOS );
+	  if ( MYOS == 1 ) printf( "OS version: Linux \n" );
+	  if ( MYOS == 4 ) printf( "OS version: BSD \n"   );
           return 0;
     }
+
 
     ////////////////////////////////////////////////////////
     if ( argc == 3)
